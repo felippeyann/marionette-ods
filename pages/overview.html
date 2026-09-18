@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Marionette · Overview</title>
+<link rel="icon" href="data:image/svg+xml,&lt;svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'&gt;&lt;text y='.9em' font-size='90'&gt;&#127917;&lt;/text&gt;&lt;/svg&gt;">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/tokens.css">
+<script src="../assets/runtime.js"></script>
+<style>
+  body{padding:22px 24px 40px}
+  .grid{display:grid;gap:14px}
+  .kpis{grid-template-columns:repeat(auto-fit,minmax(170px,1fr));margin-bottom:16px}
+  .kpi .kicker{margin-bottom:6px}
+  .kpi .v{font-family:var(--mono);font-size:26px;font-weight:700;color:var(--ink);line-height:1.1}
+  .kpi .s{font-size:11.5px;color:var(--ink-4);margin-top:4px}
+  .kpi .v .u{font-size:13px;color:var(--ink-3);font-weight:400}
+  .row2{grid-template-columns:1.25fr 1fr;margin-bottom:16px}
+  .row3{grid-template-columns:1fr 1fr}
+  @media (max-width:980px){.row2,.row3{grid-template-columns:1fr}}
+  h2{font-size:13px;font-weight:600;color:var(--ink);margin:0 0 4px}
+  .sub{font-size:11.5px;color:var(--ink-4);margin:0 0 12px}
+  .chart{width:100%;height:260px}
+  /* feed */
+  .feed{list-style:none;margin:0;padding:0;max-height:300px;overflow-y:auto}
+  .feed li{display:flex;gap:10px;align-items:baseline;padding:8px 2px;border-bottom:1px solid var(--line);font-size:12.5px}
+  .feed .t{font-family:var(--mono);font-size:10.5px;color:var(--ink-4);flex:0 0 74px}
+  .feed .who{color:var(--ink);font-weight:500}
+  .feed .tag{font-family:var(--mono);font-size:9.5px;letter-spacing:.5px;padding:1px 7px;border-radius:99px;border:1px solid var(--line-strong)}
+  .tag.fill{color:var(--accent-soft);border-color:rgba(37,99,235,.4)}
+  .tag.merge{color:var(--ok)} .tag.suggest{color:var(--warn)} .tag.keep{color:var(--ink-3)} .tag.score{color:var(--accent-soft)}
+  /* health strip */
+  .strip{display:flex;flex-wrap:wrap;gap:8px}
+  .pill{display:flex;align-items:center;gap:7px;background:var(--card);border:1px solid var(--line);border-radius:99px;padding:6px 12px;font-size:12px;color:var(--ink-2)}
+  .pill .num{font-size:10.5px;color:var(--ink-4)}
+</style>
+</head>
+<body>
+
+<div class="grid kpis" id="kpis"></div>
+
+<div class="grid row2">
+  <div class="panel">
+    <h2 data-i18n="funnel_h">Commercial funnel &middot; last 30 days</h2>
+    <p class="sub" data-i18n="funnel_s">Every stage is computed from the same synthetic world the other modules read. The numbers agree with the scoring bands by construction.</p>
+    <div id="funnelChart" class="chart"></div>
+  </div>
+  <div class="panel">
+    <h2 data-i18n="wb_h">Puppeteer activity &middot; live write-back</h2>
+    <p class="sub" data-i18n="wb_s">Decisions the ODS pushed back into the commercial platforms. The platforms execute; the intelligence lives here.</p>
+    <ul class="feed" id="wbFeed"></ul>
+  </div>
+</div>
+
+<div class="grid row3">
+  <div class="panel">
+    <h2 data-i18n="sync_h">Ingestion volume &middot; 7 days, all sources</h2>
+    <p class="sub" data-i18n="sync_s">Weekends dip by design; the marketing spike is a campaign burst, not an incident. Anomaly literacy is part of the platform.</p>
+    <div id="syncChart" class="chart"></div>
+  </div>
+  <div class="panel">
+    <h2 data-i18n="health_h">Source health right now</h2>
+    <p class="sub" data-i18n="health_s">One glance, ten sources. The full diagnostic view lives in Integrations.</p>
+    <div class="strip" id="healthStrip"></div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/echarts@6.0.0/dist/echarts.min.js"></script>
+<script src="../assets/datakit.js"></script>
+<script>
+(function () {
+  "use strict";
+  var W = window.MARIONETTE, K = W.k;
+
+  window.PT_DICT = {
+    funnel_h: "Funil comercial &middot; últimos 30 dias",
+    funnel_s: "Cada estágio é calculado do mesmo mundo sintético que os outros módulos leem. Os números batem com as bandas de score por construção.",
+    wb_h: "Atividade do Puppeteer &middot; write-back ao vivo",
+    wb_s: "Decisões que o ODS devolveu às plataformas comerciais. As plataformas executam; a inteligência mora aqui.",
+    sync_h: "Volume de ingestão &middot; 7 dias, todas as fontes",
+    sync_s: "Fins de semana caem por natureza; o pico de marketing é campanha, não incidente. Ler anomalia certo faz parte da plataforma.",
+    health_h: "Saúde das fontes agora",
+    health_s: "Um olhar, dez fontes. O diagnóstico completo vive em Integrações.",
+    k_entities: "entidades no golden record", k_entities_s: "resolvidas de 10 fontes",
+    k_sources: "fontes ativas", k_sources_s: "3 regulatórias com nome real",
+    k_syncs: "syncs em 24h", k_syncs_s: "de sucesso",
+    k_wb: "write-backs em 30d", k_wb_s: "de sucesso no push",
+    k_scored: "leads escorados", k_scored_s: "config-driven, 25 dimensões",
+    k_ai: "custo de IA no mês", k_ai_s: "por reunião avaliada"
+  };
+
+  var wbTagPt = { fill: "preencheu", merge: "fundiu", suggest: "sugeriu", keep: "manteve", score: "score" };
+  var wbTagEn = { fill: "fill", merge: "merge", suggest: "suggest", keep: "keep", score: "score" };
+
+  function kpiCards() {
+    var L = window.lang();
+    function t(en, pt) { return L === "pt" ? pt : en; }
+    var items = [
+      { v: fmt.int(K.entitiesTotal), k: t("entities in the golden record", PT_DICT.k_entities), s: t("resolved from 10 sources", PT_DICT.k_entities_s) },
+      { v: K.sources + "/" + K.sources, k: t("sources live", PT_DICT.k_sources), s: t("3 regulatory, real names", PT_DICT.k_sources_s) },
+      { v: fmt.int(K.syncs24h), k: t("syncs in 24h", PT_DICT.k_syncs), s: fmt.pct(K.syncSuccessRate) + " " + t("success", PT_DICT.k_syncs_s) },
+      { v: fmt.int(K.writebackQueue30d), k: t("write-backs in 30d", PT_DICT.k_wb), s: fmt.pct(K.writebackSuccess) + " " + t("push success", PT_DICT.k_wb_s) },
+      { v: fmt.int(K.leadsScored), k: t("leads scored", PT_DICT.k_scored), s: t("config-driven, 25 dimensions", PT_DICT.k_scored_s) },
+      { v: fmt.usd(K.aiCostMtdUsd), k: t("AI cost this month", PT_DICT.k_ai), s: fmt.usd(K.aiCostPerMeetingUsd) + " " + t("per evaluated meeting", PT_DICT.k_ai_s) }
+    ];
+    document.getElementById("kpis").innerHTML = items.map(function (it) {
+      return '<div class="card kpi"><div class="kicker">' + it.k + '</div><div class="v">' + it.v + '</div><div class="s">' + it.s + "</div></div>";
+    }).join("");
+  }
+
+  function feed() {
+    var L = window.lang();
+    document.getElementById("wbFeed").innerHTML = W.writebackFeed.map(function (f) {
+      var tag = L === "pt" ? wbTagPt[f.action.type] : wbTagEn[f.action.type];
+      var verb = L === "pt" ? f.action.pt : f.action.en;
+      return '<li><span class="t">' + fmt.ago(f.minAgo) + '</span><span class="tag ' + f.action.type + '">' + tag + '</span><span><span class="who">' + f.who + "</span> &middot; " + verb + " (" + f.field + " &rarr; " + f.target + ")</span></li>";
+    }).join("");
+  }
+
+  function healthStrip() {
+    var L = window.lang();
+    document.getElementById("healthStrip").innerHTML = W.syncHealth.map(function (h) {
+      return '<span class="pill"><span class="dot ' + h.status + '"></span>' + (L === "pt" ? h.name_pt : h.name) + ' <span class="num">' + fmt.ago(h.lagMin) + "</span></span>";
+    }).join("");
+  }
+
+  var funnelChart, syncChart;
+  window.renderAll = function () {
+    registerDemoTheme();
+    kpiCards(); feed(); healthStrip();
+    var L = window.lang();
+
+    funnelChart = makeChart(document.getElementById("funnelChart"));
+    funnelChart.setOption({
+      grid: { left: 8, right: 60, top: 10, bottom: 10, containLabel: true },
+      xAxis: { type: "value", show: false },
+      yAxis: { type: "category", inverse: true, data: W.funnel.map(function (f) { return L === "pt" ? f.pt : f.en; }), axisTick: { show: false }, axisLine: { show: false } },
+      tooltip: { trigger: "axis", axisPointer: { type: "none" } },
+      series: [{
+        type: "bar", barWidth: 20,
+        data: W.funnel.map(function (f, i) {
+          var ramp = ["#7db4f7", "#5b9bf4", "#3b82f6", "#2563eb", "#1d4ed8"];
+          return { value: f.value, itemStyle: { color: ramp[i], borderRadius: [0, 4, 4, 0] } };
+        }),
+        label: { show: true, position: "right", color: cvar("--c-text"), fontFamily: '"Space Mono",monospace', fontSize: 11, formatter: function (p) { return fmt.int(p.value); } }
+      }]
+    });
+
+    syncChart = makeChart(document.getElementById("syncChart"));
+    syncChart.setOption({
+      grid: { left: 8, right: 16, top: 16, bottom: 8, containLabel: true },
+      xAxis: { type: "category", data: W.syncSeries7d.map(function (d) { return d.label; }), boundaryGap: false },
+      yAxis: { type: "value", axisLabel: { formatter: function (v) { return v >= 1000 ? (v / 1000) + "k" : v; } } },
+      tooltip: { trigger: "axis" },
+      series: [{
+        type: "line", smooth: true, symbol: "circle", symbolSize: 5,
+        data: W.syncSeries7d.map(function (d) { return d.value; }),
+        lineStyle: { width: 2.5, color: cvar("--accent") },
+        itemStyle: { color: cvar("--accent") },
+        areaStyle: { color: { type: "linear", x: 0, y: 0, x2: 0, y2: 1, colorStops: [{ offset: 0, color: "rgba(37,99,235,.28)" }, { offset: 1, color: "rgba(37,99,235,0)" }] } }
+      }]
+    });
+  };
+
+  applyLang(window.lang());
+})();
+</script>
+</body>
+</html>
