@@ -158,6 +158,25 @@
   ].map(function (r) { return { name: r[0], uf: r[1], total: r[2] }; });
   var UF_UNMAPPED = { semUfComCidade: 214, semLocalizacao: 6507 }; // fecha com K.entitiesTotal por construcao
 
+  // ---------- Camada executiva (Inicio): meta, saude, fluxos, prioridades ----------
+  var META = { metaMes: 550000 };
+  var SAUDE = { score: 98.7, cronFalhas48h: 0 };
+  var FLUXOS = [
+    { name_en: "CRM sync", name_pt: "Sync CRM", msg_en: "15 min cadence, last run 11 min ago, 0 dead letters today", msg_pt: "cadência 15 min, última há 11 min, 0 dead letters hoje", status: "ok" },
+    { name_en: "Marketing Automation", name_pt: "Automação de Marketing", msg_en: "lag 1h36 after campaign burst, inside documented false alarm", msg_pt: "lag 1h36 pós-disparo de campanha, dentro do falso alarme documentado", status: "warn" },
+    { name_en: "Write-back (Puppeteer)", name_pt: "Write-back (Puppeteer)", msg_en: "99.3% push success in 30d, overwrite protection active", msg_pt: "99,3% de sucesso em 30d, proteção anti-overwrite ativa", status: "ok" },
+    { name_en: "AI evaluations", name_pt: "Avaliações IA", msg_en: "2,118 meetings scored, US$ 0.08 per meeting, P95 under 60s", msg_pt: "2.118 reuniões avaliadas, US$ 0,08 por reunião, P95 abaixo de 60s", status: "ok" },
+    { name_en: "Regulatory ingestion", name_pt: "Ingestão regulatória", msg_en: "CVM/ANCORD/BCB nightly batches on schedule", msg_pt: "lotes noturnos CVM/ANCORD/BCB em dia", status: "info" },
+    { name_en: "Quarantine", name_pt: "Quarentena", msg_en: "143 identity matches waiting review (score 70-89)", msg_pt: "143 matches de identidade aguardando revisão (score 70-89)", status: "warn" }
+  ];
+  var PRIORIDADES = [
+    { sig_en: "12 deals in 20d+ aging", sig_pt: "12 deals em aging 20d+", sm_en: "worst stage: Proposal (5)", sm_pt: "pior etapa: Proposta (5)", med: "R$ 402k", dest_en: "Review in Sales Cockpit", dest_pt: "Revisar no Cockpit Comercial", page: "cockpit", risk: "alto" },
+    { sig_en: "Quarantine backlog at 143", sig_pt: "Quarentena com 143 pendências", sm_en: "oldest waiting 9 days", sm_pt: "mais antiga há 9 dias", med: "143 matches", dest_en: "Merge queue in Accounts", dest_pt: "Fila de merge em Contas", page: "empresas", risk: "medio" },
+    { sig_en: "No-show rate at 14%", sig_pt: "No-show em 14%", sm_en: "alert threshold is 15%", sm_pt: "limite de alerta é 15%", med: "36 no-shows", dest_en: "Pre-sales in Sales Cockpit", dest_pt: "Pré-vendas no Cockpit", page: "cockpit", risk: "medio" },
+    { sig_en: "Marketing sync lag 1h36", sig_pt: "Lag de 1h36 no marketing", sm_en: "campaign burst decay, documented", sm_pt: "decaimento pós-campanha, documentado", med: "1 source", dest_en: "Data & Platform health", dest_pt: "Saúde em Dados & Plataforma", page: "quality", risk: "na" },
+    { sig_en: "6,507 entities without location", sig_pt: "6.507 entidades sem localização", sm_en: "214 backfillable via city lookup", sm_pt: "214 backfilláveis via lookup de cidade", med: "9.5% of base", dest_en: "Data quality protocol", dest_pt: "Protocolo de qualidade de dados", page: "quality", risk: "na" }
+  ];
+
   // ---------- Indicadores BCB (strip do cockpit; valores sintéticos plausíveis) ----------
   var BCB = [
     { id: "selic", label: "SELIC", value: "15,00%", trend: "fl" },
@@ -300,6 +319,10 @@
     qualityFunnel: QUALITY_FUNNEL,
     ufDist: UF_DIST,
     ufUnmapped: UF_UNMAPPED,
+    meta: META,
+    saude: SAUDE,
+    fluxos: FLUXOS,
+    prioridades: PRIORIDADES,
     bcb: BCB,
     syncHealth: health,
     syncSeries7d: buildSyncSeries(health),
