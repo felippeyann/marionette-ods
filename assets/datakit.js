@@ -302,6 +302,78 @@
     return days;
   }
 
+  // ---------- Cockpit comercial ----------
+  // Pipeline completo por etapa (deals abertos + valor). Proposta+ é o subconjunto de PROP_STAGES.
+  var PIPELINE_STAGES = [
+    { label_en: "Lead",        label_pt: "Lead",        open: 640, valor: 0 },
+    { label_en: "Qualified",   label_pt: "Qualificado", open: 288, valor: 0 },
+    { label_en: "Meeting",     label_pt: "Reunião",     open: 176, valor: 0 },
+    { label_en: "Proposal",    label_pt: "Proposta",    open: 35,  valor: 780000 },
+    { label_en: "Negotiation", label_pt: "Negociação", open: 22,  valor: 545000 },
+    { label_en: "Closing",     label_pt: "Fechamento",  open: 12,  valor: 310000 }
+  ];
+  var TEMPERATURA = [
+    { key: "hot",  en: "Hot",  pt: "Quente", value: 58, color: "rose" },
+    { key: "warm", en: "Warm", pt: "Morno",  value: 143, color: "amber" },
+    { key: "cold", en: "Cold", pt: "Frio",   value: 372, color: "blue" }
+  ];
+  var SLA_RESPONSE = [
+    { en: "< 5 min",  pt: "< 5 min",  value: 214 },
+    { en: "5-30 min", pt: "5-30 min", value: 168 },
+    { en: "30-60 min",pt: "30-60 min",value: 92 },
+    { en: "1-4 h",    pt: "1-4 h",    value: 61 },
+    { en: "4 h+",     pt: "4 h+",     value: 34 }
+  ];
+  var WON_LOST = ["04/26","05/26","06/26","07/26","08/26","09/26"].map(function (mo, i) {
+    var won = [5, 6, 7, 6, 8, 9][i], lost = [11, 9, 12, 10, 8, 10][i];
+    return { month: mo, won: won, lost: lost };
+  });
+  var LOST_REASONS = [
+    { en: "Price / fee",        pt: "Preço / fee",        value: 22 },
+    { en: "Timing / no budget", pt: "Timing / sem verba",  value: 17 },
+    { en: "Competitor",         pt: "Concorrente",         value: 13 },
+    { en: "No decision",        pt: "Sem decisão",        value: 9 },
+    { en: "Poor fit",           pt: "Sem fit",             value: 7 }
+  ];
+  var AREAS = [
+    { en: "Fixed income",  pt: "Renda fixa",      won: 168000, ticket: 42000, pipe: 720000, conv: 14 },
+    { en: "Equities",      pt: "Renda variável",  won: 96000,  ticket: 38000, pipe: 540000, conv: 11 },
+    { en: "Funds",         pt: "Fundos",          won: 78000,  ticket: 52000, pipe: 410000, conv: 12 },
+    { en: "Pension",       pt: "Previdência",     won: 44000,  ticket: 61000, pipe: 230000, conv: 9 },
+    { en: "FX",            pt: "Câmbio",          won: 26500,  ticket: 33000, pipe: 180000, conv: 8 }
+  ];
+  // win rate por etapa (conversão de uma etapa para a próxima, %)
+  var WINRATE_STAGES = [
+    { label_en: "Lead→Qual", label_pt: "Lead→Qual", value: 45 },
+    { label_en: "Qual→Meet", label_pt: "Qual→Reun", value: 61 },
+    { label_en: "Meet→Prop", label_pt: "Reun→Prop", value: 46 },
+    { label_en: "Prop→Neg",  label_pt: "Prop→Neg",  value: 63 },
+    { label_en: "Neg→Won",   label_pt: "Neg→Won",   value: 38 }
+  ];
+  // squads para o cross-filter (fator determinístico aplicado no módulo)
+  var SQUADS = [
+    { id: "all",        en: "All squads",  pt: "Todos os times", factor: 1 },
+    { id: "north",      en: "North squad", pt: "Time Norte",     factor: 0.42 },
+    { id: "south",      en: "South squad", pt: "Time Sul",       factor: 0.36 },
+    { id: "enterprise", en: "Enterprise",  pt: "Enterprise",     factor: 0.22 }
+  ];
+  var PERIODS = [
+    { id: "90",  en: "90 days",  pt: "90 dias",  factor: 1 },
+    { id: "30",  en: "30 days",  pt: "30 dias",  factor: 0.38 },
+    { id: "180", en: "180 days", pt: "180 dias", factor: 1.85 }
+  ];
+  var CKM_QUEUES = [
+    { en: "Proposal+ without value",  pt: "Proposta+ sem valor",       n: 8,  page: "empresas", risk: "medio" },
+    { en: "Deals without owner",      pt: "Deals sem responsável",     n: 14, page: "empresas", risk: "medio" },
+    { en: "Stalled 20d+ in proposal", pt: "Parados 20d+ em proposta",  n: 12, page: "quality",  risk: "alto" },
+    { en: "No-show follow-up due",    pt: "Follow-up de no-show",      n: 21, page: "cockpit-vendedor", risk: "medio" }
+  ];
+  var COCKPIT = {
+    pipelineStages: PIPELINE_STAGES, temperatura: TEMPERATURA, slaResponse: SLA_RESPONSE,
+    wonLost: WON_LOST, lostReasons: LOST_REASONS, areas: AREAS, winrateStages: WINRATE_STAGES,
+    squads: SQUADS, periods: PERIODS, queues: CKM_QUEUES
+  };
+
   // ---------- Monta o mundo ----------
   var health = buildSyncHealth();
   var world = {
@@ -323,6 +395,7 @@
     saude: SAUDE,
     fluxos: FLUXOS,
     prioridades: PRIORIDADES,
+    cockpit: COCKPIT,
     bcb: BCB,
     syncHealth: health,
     syncSeries7d: buildSyncSeries(health),

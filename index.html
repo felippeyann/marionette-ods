@@ -12,7 +12,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
 <script>/* theme/lang init antes do paint; "?theme="/"?lang=" forcam para teste */(function(){var q={};try{new URLSearchParams(location.search).forEach(function(v,k){q[k]=v;});}catch(e){}var t=null,l=null;try{t=localStorage.getItem("theme");l=localStorage.getItem("lang");}catch(e){}var th=(q.theme==="light"||q.theme==="dark")?q.theme:(t==="light"?"light":"dark");var lg=(q.lang==="pt"||q.lang==="en")?q.lang:(l==="pt"?"pt":"en");document.documentElement.setAttribute("data-theme",th);document.documentElement.setAttribute("data-lang",lg);})();</script>
-<link rel="stylesheet" href="assets/app.css">
+<link rel="stylesheet" href="assets/app.css?v=2">
 </head>
 <body>
 
@@ -236,15 +236,7 @@
 </div>
 
 <!-- ══════════════ STUBS ══════════════ -->
-<div class="page ind-on" id="page-cockpit">
-  <div class="ind-h"><span class="ttl" data-i18n="nav_cockpit">Sales Cockpit</span><span class="sub" data-i18n="stub_sub">skeleton mirrored next &middot; module map below</span></div>
-  <div class="stub-wrap">
-    <div class="stub"><b data-i18n="st_c1">Overview subtab</b><span data-i18n="st_c1b">Pipeline KPIs, stage waterfall, win/loss by team, macro strip pinned on top.</span></div>
-    <div class="stub"><b data-i18n="st_c2">Pre-sales subtab</b><span data-i18n="st_c2b">SDR activity, scheduling funnel, no-show control, response SLA distribution.</span></div>
-    <div class="stub"><b data-i18n="st_c3">Closing subtab</b><span data-i18n="st_c3b">Proposal aging, forecast by closer, contract cycle, slippage flags.</span></div>
-    <div class="stub"><b data-i18n="st_c4">Production by area</b><span data-i18n="st_c4b">Won revenue by product area, mix shifts, cross-sell signals.</span></div>
-  </div>
-</div>
+<div class="page ind-on" id="page-cockpit"></div>
 <div class="page ind-on" id="page-cockpit-vendedor">
   <div class="ind-h"><span class="ttl" data-i18n="nav_meu">My Cockpit</span><span class="sub" data-i18n="stub_sub">skeleton mirrored next &middot; module map below</span></div>
   <div class="stub-wrap">
@@ -300,9 +292,10 @@
 
 
 <script src="https://cdn.jsdelivr.net/npm/echarts@6.0.0/dist/echarts.min.js"></script>
-<script src="assets/datakit.js"></script>
-<script src="assets/app.js"></script>
-<script src="assets/pages/executive.js"></script>
+<script src="assets/datakit.js?v=2"></script>
+<script src="assets/app.js?v=2"></script>
+<script src="assets/pages/executive.js?v=2"></script>
+<script src="assets/pages/cockpit.js?v=2"></script>
 <script>window.M.boot();</script>
 </body>
 </html>

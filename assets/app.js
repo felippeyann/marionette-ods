@@ -100,7 +100,9 @@
   }
   function resizeAll() { Object.keys(CHARTS).forEach(function (k) { try { CHARTS[k].resize(); } catch (e) {} }); }
   window.addEventListener("resize", resizeAll);
-  M.cvar = cvar; M.initChart = initChart; M.resizeAll = resizeAll;
+  // descarta as instâncias destes ids (páginas que regeneram o próprio markup chamam antes de reconstruir)
+  function disposeCharts(ids) { ids.forEach(function (id) { if (CHARTS[id]) { try { CHARTS[id].dispose(); } catch (e) {} delete CHARTS[id]; } }); }
+  M.cvar = cvar; M.initChart = initChart; M.resizeAll = resizeAll; M.disposeCharts = disposeCharts;
 
   // ─── células densas (espelho _ovMini/_ovRich/_ovDelta) ───
   function ovMini(k, v, sub, subCls, barPct, barColor) {
